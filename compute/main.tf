@@ -13,13 +13,11 @@ resource "aws_instance" "webapi_instance" {
 
 # Define Auto Scaling Group for .NET WebAPI EC2 instances
 resource "aws_autoscaling_group" "webapi_autoscaling_group" {
-  availability_zones        = [var.webapi_availability_zones]
+  availability_zones        = var.webapi_availability_zones
   name                 = "${var.webapi_name}-autoscaling-group"
   max_size             = var.webapi_max_size
   min_size             = var.webapi_min_size
-  desired_capacity     = var.webapi_desired_capacity
   launch_configuration = aws_launch_configuration.webapi_launch_configuration.name
-  vpc_zone_identifier  = [var.subnet_id]  # Assuming subnet_id is defined as a variable
 }
 
 # Define Launch Configuration for .NET WebAPI EC2 instances

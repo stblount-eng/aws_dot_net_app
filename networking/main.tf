@@ -1,8 +1,8 @@
-ivateivate# Create VPC
+# Create VPC
 resource "aws_vpc" "main" {
-  cidr_block       = var.vpc_cidr_block
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  cidr_block              = var.vpc_cidr_block
+  enable_dns_hostnames    = true
+  enable_dns_support      = true
 
   tags = {
     Name = var.vpc_name
@@ -18,32 +18,35 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-# Create Public Subnet
+# Create Public Subnets
 resource "aws_subnet" "public" {
+  for_each          = var.public_subnets
   vpc_id            = aws_vpc.main.id
-  cidr_block        = var.public_subnet_cidr_block
-  availability_zone = var.public_subnet_az
+  cidr_block        = each.value.cidr_block
+  availability_zone = each.value.availability_zone
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.vpc_name}-public-subnet"
+    Name = "${var.vpc_name}-public-subnet-${each.key}"
   }
 }
 
-# Create Private Subnet
+# Create Private Subnets
 resource "aws_subnet" "private" {
+  for_each          = var.private_subnets
   vpc_id            = aws_vpc.main.id
-  cidr_block        = var.private_subnet_cidr_block
-  availability_zone = var.private_subnet_az
+  cidr_block        = each.value.cidr_block
+  availability_zone = each.value.availability_zone
 
   tags = {
-    Name = "${var.vpc_name}-private-subnet"
+    Name = "${var.vpc_name}-private-subnet-${each.key}"
   }
 }
 
-# Create Route Table
-resource "aws_route_table" "main" {
-  vpc_id = aws_vpc.main.id
+# Create Route Table for Public Subnets
+resource "aws_route_table" "public" {
+  for_each = aws_subnet.public
+  vpc_id   = aws_vpc.main.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -51,18 +54,13 @@ resource "aws_route_table" "main" {
   }
 
   tags = {
-    Name = "${var.vpc_name}-public-route-table"
+    Name = "${var.vpc_name}-public-route-table-${each.key}"
   }
 }
 
-# Associate Public Subnet with Route Table
+# Associate Public Subnets with Route Tables
 resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.main.id
-}
-
-# Associate Private Subnet with Route Table
-resource "aws_route_table_association" "private" {
-  subnet_id      = aws_subnet.private.id
-  route_table_id = aws_route_table.main.id
+  for_each      = aws_subnet.public
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public[each.key].id
 }

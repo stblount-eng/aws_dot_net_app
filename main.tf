@@ -65,4 +65,5 @@ module "security" {
 
 module "monitoring" {
   source = "./monitoring"
+  cloudtrail_bucket = var.cloudtrail_bucket
 }
