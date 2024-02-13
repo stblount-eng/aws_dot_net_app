@@ -45,6 +45,3 @@ Follow these steps to deploy the infrastructure:
     terraform destroy
     ```
    This command will destroy all the resources created by Terraform. **Note:** Be cautious when running destroy in production environments.
-
-### Conclusion
-Congratulations! You've successfully deployed the infrastructure using Terraform. You can now begin using and managing your AWS resources as needed.
